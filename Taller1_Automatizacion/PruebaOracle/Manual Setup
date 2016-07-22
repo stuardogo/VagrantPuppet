@@ -1,0 +1,63 @@
+yum install oracle-rdbms-server-12cR1-preinstall -y
+yum update
+
+Set the password for the "oracle" user.
+passwd oracle
+
+Amend the "/etc/security/limits.d/90-nproc.conf" file as described below.
+
+# Change this
+*          soft    nproc    1024
+
+# To this
+* - nproc 16384
+
+
+
+
+
+
+
+
+Set secure Linux to permissive by editing the "/etc/selinux/config" file, making sure the SELINUX flag is set as follows.
+
+SELINUX=permissive
+
+Once the change is complete, restart the server or run the following command.
+
+# setenforce Permissive
+
+If you have the Linux firewall enabled, you will need to disable or configure it, as shown here or here. To disable it, do the following.
+
+# service iptables stop
+# chkconfig iptables off
+
+Create the directories in which the Oracle software will be installed.
+
+mkdir -p /u01/app/oracle/product/12.1.0.2/db_1
+chown -R oracle:oinstall /u01
+chmod -R 775 /u01
+
+Putting mount points directly under root is typically a bad idea. It's done here for simplicity, but for a real installation "/" should be reserved for the OS.
+
+Unless you are working from the console, or using SSH tunnelling, login as root and issue the following command.
+
+xhost +<machine-name>
+
+Add the following lines at the end of the "/home/oracle/.bash_profile" file.
+
+# Oracle Settings
+export TMP=/tmp
+export TMPDIR=$TMP
+
+export ORACLE_HOSTNAME=ol6-121.localdomain
+export ORACLE_UNQNAME=cdb1
+export ORACLE_BASE=/u01/app/oracle
+export ORACLE_HOME=$ORACLE_BASE/product/12.1.0.2/db_1
+export ORACLE_SID=cdb1
+
+export PATH=/usr/sbin:$PATH
+export PATH=$ORACLE_HOME/bin:$PATH
+
+export LD_LIBRARY_PATH=$ORACLE_HOME/lib:/lib:/usr/lib
+export CLASSPATH=$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib

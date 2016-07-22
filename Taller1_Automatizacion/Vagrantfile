@@ -1,0 +1,63 @@
+Vagrant.configure(2) do |config|
+  config.ssh.pty = true
+
+# nodo 1 
+  config.vm.define 'nodo1' do |nodo1|  
+    nodo1.vm.box = "centosPuppet"
+    nodo1.vm.hostname = "cas00.datum.com.gt"
+    nodo1.vm.network 'private_network', ip: '5.5.5.0', netmask: '255.255.255.0'
+    nodo1.vm.network 'forwarded_port', guest: 9042, host: 9001
+    nodo1.vm.provider :virtualbox do |vb|
+      vb.customize ['modifyvm', :id, '--memory', 1048]
+      vb.customize ["modifyvm", :id, "--cpus", "1"]
+    end
+    #nodo1.vm.provision "shell", inline: <<-SHELL
+    #  yum list
+    #  yum -y install puppet
+    #SHELL
+    nodo1.vm.provision :puppet do |puppet|
+      puppet.manifests_path = 'manifests'
+      puppet.manifest_file  = 'nodo1.pp'
+    end
+  end
+
+# nodo 2
+  config.vm.define 'nodo2' do |nodo2|
+    nodo2.vm.box = "centosPuppet"
+    nodo2.vm.hostname = "cas01.datum.com.gt"
+    nodo2.vm.network 'private_network', ip: '5.5.5.1', netmask: '255.255.255.0'
+    nodo2.vm.network 'forwarded_port', guest: 9042, host: 9002
+    nodo2.vm.provider :virtualbox do |vb|
+      vb.customize ['modifyvm', :id, '--memory', 1048]
+      vb.customize ["modifyvm", :id, "--cpus", "1"]
+    end
+    #nodo2.vm.provision "shell", inline: <<-SHELL
+    #  yum list
+    #  yum -y install puppet
+    #SHELL
+    nodo2.vm.provision :puppet do |puppet|
+      puppet.manifests_path = 'manifests'
+      puppet.manifest_file  = 'nodo2.pp'
+    end
+  end
+
+# nodo 3
+  config.vm.define 'nodo3' do |nodo3|
+    nodo3.vm.box = "centosPuppet"
+    nodo3.vm.hostname = "cas02.datum.com.gt"
+    nodo3.vm.network 'private_network', ip: '5.5.5.2', netmask: '255.255.255.0'
+    nodo3.vm.network 'forwarded_port', guest: 9042, host: 9003
+    nodo3.vm.provider :virtualbox do |vb|
+      vb.customize ['modifyvm', :id, '--memory', 1048]
+      vb.customize ["modifyvm", :id, "--cpus", "1"]
+    end
+    #nodo3.vm.provision "shell", inline: <<-SHELL
+    #  yum list
+    #  yum -y install puppet
+    #SHELL
+    nodo3.vm.provision :puppet do |puppet|
+      puppet.manifests_path = 'manifests'
+      puppet.manifest_file  = 'nodo3.pp'
+    end
+  end
+end

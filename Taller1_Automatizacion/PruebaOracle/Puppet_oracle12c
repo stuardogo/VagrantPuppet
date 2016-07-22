@@ -1,0 +1,116 @@
+package {'oracle-rdbms-server-12cR1-preinstall':
+  ensure      => installed
+}
+
+exec { "Cambio_Pass":
+	command     => "echo datum2016 | passwd oracle stdin",
+	require     => Package["oracle-rdbms-server-12cR1-preinstall"],
+}
+
+$nproc = "/etc/security/limits.d/90-nproc.conf"
+file { $nproc:
+  ensure      => file,
+  require     => Package["oracle-rdbms-server-12cR1-preinstall"],
+}
+
+file_line { 'nprocConf':
+  path  => $nproc,
+  line  => '* - nproc 16384',
+  match => "\"*\" soft    nproc    1024',
+  require  => File[$nproc],
+}
+
+$selinux_config = "/etc/selinux/config"
+file { $selinux_config:
+  ensure      => file,
+  require     => Package["oracle-rdbms-server-12cR1-preinstall"],
+}
+
+file_line { 'selinuxConfig':
+  path  => $selinux_config,
+  line  => 'SELINUX=permissive',
+  match => 'SELINUX=disabled',
+  require  => File[$selinux_config],
+  notify => Reboot['reiniciar'],
+}
+
+reboot { 'reiniciar':
+  apply  => finished,
+}
+
+exec { "permissive":
+	command     => "setenforce Permissive",
+	require     => File_line["selinuxConfig"],
+}
+
+exec { "quitarFirewall":
+	command     => "service iptables stop",
+}
+
+exec { "QuitaFirewall":
+	command     => "chkconfig iptables off",
+}
+
+$bash = "/home/oracle/.bash_profile"
+file { $bash:
+  ensure      => file,
+  require     => Package["oracle-rdbms-server-12cR1-preinstall"],
+}
+
+file_line { 'LineasBash':
+  path  => $bash,
+  line  => 'export TMP=/tmp',
+  require  => File[$bash],
+}
+file_line { 'LineasBash':
+  path  => $bash,
+  line  => 'export TMPDIR=$TMP',
+  require  => File[$bash],
+}
+file_line { 'LineasBash':
+  path  => $bash,
+  line  => 'export ORACLE_HOSTNAME=ol6-121.localdomain',
+  require  => File[$bash],
+}
+file_line { 'LineasBash':
+  path  => $bash,
+  line  => 'export ORACLE_UNQNAME=cdb1',
+  require  => File[$bash],
+}
+file_line { 'LineasBash':
+  path  => $bash,
+  line  => 'export ORACLE_BASE=/u01/app/oracle',
+  require  => File[$bash],
+}
+file_line { 'LineasBash':
+  path  => $bash,
+  line  => 'export ORACLE_HOME=$ORACLE_BASE/product/12.1.0.2/db_1',
+  require  => File[$bash],
+}
+file_line { 'LineasBash':
+  path  => $bash,
+  line  => 'export ORACLE_SID=cdb1',
+  require  => File[$bash],
+}
+file_line { 'LineasBash':
+  path  => $bash,
+  line  => 'export PATH=/usr/sbin:$PATH',
+  require  => File[$bash],
+}
+file_line { 'LineasBash':
+  path  => $bash,
+  line  => 'export PATH=$ORACLE_HOME/bin:$PATH',
+  require  => File[$bash],
+}
+file_line { 'LineasBash':
+  path  => $bash,
+  line  => 'export LD_LIBRARY_PATH=$ORACLE_HOME/lib:/lib:/usr/lib',
+  require  => File[$bash],
+}
+file_line { 'LineasBash':
+  path  => $bash,
+  line  => 'export CLASSPATH=$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib',
+  require  => File[$bash],
+}
+
+
